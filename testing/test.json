@@ -2,7 +2,7 @@
     "repo": "./testing/test-backup",
     "passwd": "backup",
     "dry-run": false,
-    "init": true,
+    "init": false,
     "entry": [
         {
             "tag": [
