@@ -2,7 +2,7 @@
 
 A Python wrapper for [Restic](https://restic.net/) using a json configuration file.
 
-Tested OS are Linux (ArchLinux) and Windows (version 10).
+Tested with Linux (ArchLinux) and Windows (version 10).
 
 ## Pre-requisites
 
