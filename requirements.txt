@@ -1,0 +1,2 @@
+# Required Python packages
+argparse >= 1.4.0
