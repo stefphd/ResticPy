@@ -1,0 +1,24 @@
+{
+    "repo": "./testing/test-backup",
+    "passwd": "backup",
+    "dry-run": false,
+    "init": true,
+    "entry": [
+        {
+            "tag": [
+                "test"
+            ],
+            "source": [
+                "./testing/test"
+            ],
+            "sudo": false,
+            "keeplast": 3,
+            "exclude": [
+                "**/.*",
+                "**/skipthis",
+                "!**/.keepthis"
+            ]
+        }
+    ],
+    "jsonfile": "testing/test.json"
+}
