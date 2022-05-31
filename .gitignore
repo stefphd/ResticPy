@@ -13,6 +13,7 @@ __pycache__/
 # Testing
 testing/test-backup
 testing/test-mount
+!testing/test.json
 
 # Distribution / packaging
 .Python
