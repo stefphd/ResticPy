@@ -19,11 +19,11 @@ def parse_args():
 	parser.add_argument('-d','--dry-run',action='store_true',help='Force dry run.')
 	parser.add_argument('-e','--echo',action='store_true',help='Echo the restic commands only.')
 	parser.add_argument('-m','--mount',metavar='FOLDER', type=str, nargs=1,help='Mount a repository (only one configuration file allowed).')
-	parser.add_argument('-c','--conf',metavar='FILE', type=str, nargs='*', help='Specify the configuration json (default is config.json)')
+	parser.add_argument('-c','--conf',metavar='FILE', type=str, nargs='*', help='Specify the configuration json (default is restic-conf.json)')
 	args = parser.parse_args()
 	#check con - if empty than conf=conf.json
 	if not args.conf: 
-		args.conf = ['conf.json'];
+		args.conf = ['restic-conf.json'];
 	#check optional args - if all false then backup=true
 	is_backup_default = (not args.backup) and (not args.snapshots) and (not args.forget) and (not args.init) and (not args.mount);
 	if is_backup_default:
