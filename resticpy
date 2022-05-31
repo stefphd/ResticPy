@@ -164,8 +164,8 @@ def get_keep_last(entry):
 # Run cmd
 def run(cmd):
 	exit = subprocess.run(cmd, shell=True)
-	if not exit.returncode==0:
-		print('repo error')
+	if not exit.returncode==0 and not platform == 'win32':
+		print(exit.returncode)
 		quit()
 
 # Init
@@ -338,6 +338,9 @@ def main():
 				quit();
 			snapshots(conf, args)
 	if args.mount:
+		if platform == 'win32':
+			print("Mount not working in Windows")
+			quit()
 		if not conf["init"]:
 			print("repo error: run resticpy --init")
 			quit();
