@@ -31,6 +31,7 @@ A `*.json` configuration file must be created for each repository. An example `*
 			"tag": ["home", "data"],
 			"source": ["${HOME}"],
 			"keeplast": "NaN",	
+			"skip": false,
 			"exclude": ["**/.*",
 						"**/*.o",
 						"**/*.o.d",
@@ -41,6 +42,7 @@ A `*.json` configuration file must be created for each repository. An example `*
 			"tag": ["config"],
 			"source": ["/etc", "${HOME}/.config"],
 			"sudo": true,
+			"skip": false,
 			"exclude": ["**/.*"]	
 		}
 	],
@@ -61,11 +63,12 @@ Optional keys are (if missing then default values are used):
 * `tag`: tags of the repository entry (array of strings)
 * `keeplast`: number of last snapshots to keep for the repository entry (integer). Use `"NaN"`, `"Inf"`, or -1 to keep all repositories (default is `-1`)
 * `exclude`: excluded directories for the repository entry (array of stings)
-* `sudo`: flag to run the restic command with sudo (default si `false`). Requires `sudo` installed. Working only for Linux (no effects in Windows)
+* `sudo`: flag to run the restic command with sudo (default is `false`). Requires `sudo` installed. Working only for Linux (no effects in Windows)
+* `skip`: flag to skip the operations on the entry (default is `false`).
 
 Note that the keys `init` must be initially set to `false` (or neglected) and will be updated automatically by the software after the repository initialization. The software will also add a new key `jsonfile` automatically for internal usage.
 
-A configuration file called `conf.json` is used by default. Different or multiple configuration files may be specified (e.g. one for each repository).
+A configuration file called `restic-conf.json` is used by default. Different or multiple configuration files may be specified (e.g. one for each repository).
 
 ## Basic usage
 
