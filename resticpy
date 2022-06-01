@@ -78,6 +78,8 @@ def fill_json(conf):
 			entry["keeplast"] = -1
 		if not "exclude" in entry:
 			entry["exclude"] = []
+		if not "skip" in entry:
+			entry["skip"] = false
 
 # Load config json
 def load_conf(conf_file):
@@ -97,8 +99,6 @@ def load_conf(conf_file):
 		#check mandatory fields
 		if not check_json(conf, file):
 			quit()
-		#add filename of json file
-		conf["jsonfile"] = file
 		#fill empty or missing (optinal) fields
 		fill_json(conf)
 		#parse env variables
@@ -169,7 +169,7 @@ def run(cmd):
 		quit()
 
 # Init
-def init(conf, args):
+def init(conf, args, conf_file):
 	#restic base
 	base = get_restic_base(conf)
 	#restic action
@@ -189,7 +189,7 @@ def init(conf, args):
 	run(cmd)
 	#conf save
 	conf["init"] = True
-	jsonfile = open(conf["jsonfile"], "w")
+	jsonfile = open(conf_file, "w")
 	json.dump(conf, jsonfile, indent=4)
 
 # Backup
@@ -199,10 +199,13 @@ def backup(conf, args):
 	#restic action
 	action = 'backup '
 	for entry in conf["entry"]:
+		if entry["skip"]:
+			continue
 		#sudo
 		sudo = ''
 		if entry["sudo"] and (platform == "linux" or platform == "linux2"):
 			sudo = 'sudo '
+			sudo += 'RESTIC_PASSWORD=' + conf["passwd"] + ' ' #add also env for sudo env
 		#restic exclude
 		exclude = get_restic_exclude(entry)
 		#restic tag
@@ -252,6 +255,8 @@ def forget(conf, args):
 	action = 'forget '
 	for entry in conf["entry"]:
 		if entry["keeplast"] == -1:
+			continue
+		if entry["skip"]:
 			continue
 		#restic tag
 		tag = get_restic_tag(entry)
@@ -314,6 +319,7 @@ def main():
 	#print(args)
 	#print(confs)
 	#gen command
+	i_conf = 0;
 	for conf in confs:
 		#set passwd env for restic
 		os.environ["RESTIC_PASSWORD"] = conf["passwd"]
@@ -321,7 +327,7 @@ def main():
 			if conf["init"]:
 				print("repo error: already init")
 				quit();
-			init(conf, args)
+			init(conf, args, args.conf[i_conf])
 		if args.backup:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
@@ -337,6 +343,7 @@ def main():
 				print("repo error: run resticpy --init")
 				quit();
 			snapshots(conf, args)
+		i_conf += 1
 	if args.mount:
 		if platform == 'win32':
 			print("Mount not working in Windows")

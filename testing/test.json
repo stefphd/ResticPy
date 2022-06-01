@@ -2,7 +2,7 @@
     "repo": "./testing/test-backup",
     "passwd": "backup",
     "dry-run": false,
-    "init": false,
+    "init": true,
     "entry": [
         {
             "tag": [
@@ -12,6 +12,7 @@
                 "./testing/test"
             ],
             "sudo": false,
+            "skip": false,
             "keeplast": 3,
             "exclude": [
                 "**/.*",
@@ -19,6 +20,5 @@
                 "!**/.keepthis"
             ]
         }
-    ],
-    "jsonfile": "testing/test.json"
+    ]
 }
