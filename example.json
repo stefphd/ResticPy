@@ -8,6 +8,7 @@
 			"tag": ["home", "data"],
 			"source": ["${HOME}"],
 			"keeplast": "NaN",	
+			"skip": false,
 			"exclude": ["**/.*",
 						"**/*.o",
 						"**/*.o.d",
@@ -17,6 +18,7 @@
 		{
 			"tag": ["config"],
 			"source": ["/etc", "${HOME}/.config"],
+			"skip": false,
 			"sudo": true,
 			"exclude": ["**/.*"]	
 		}
