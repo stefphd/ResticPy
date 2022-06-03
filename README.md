@@ -160,6 +160,7 @@ or backup with dry-run
 resticpy -bd
 ```
 
-## TODO list
+## Installation
 
-* make installer with setuptools
+### Linux
+For ArchLinux users use the AUR. For other distros just copy `resticpy` to `/bin/usr` (or other directories in the `$PATH`)
