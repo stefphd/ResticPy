@@ -19,17 +19,52 @@ def parse_args():
 	parser.add_argument('-d','--dry-run',action='store_true',help='Force dry run.')
 	parser.add_argument('-e','--echo',action='store_true',help='Echo the restic commands only.')
 	parser.add_argument('-m','--mount',metavar='FOLDER', type=str, nargs=1,help='Mount a repository (only one configuration file allowed).')
-	parser.add_argument('-c','--conf',metavar='FILE', type=str, nargs='*', help='Specify the configuration json (default is restic-conf.json)')
+	parser.add_argument('-c','--conf',metavar='FILE(s)/FOLDER(s)', type=str, nargs='*', help='Specify the configuration json file(s) (default is restic-conf.json) or its location folder(s)')
+	subparsers = parser.add_subparsers(dest='command')
+	genconf= subparsers.add_parser('genconf',help='Generate a configuration file in $HOME')
+	genconf.add_argument('-n','--name', type=str, nargs=1, help='Set the name of the configuration file (defualt is restic-conf.json)')
+	genconf.add_argument('-d','--dir', type=str, nargs=1, help='Set the location of the configuration file (defualt is $HOME')
+	genconf.add_argument('-r','--repo', type=str, nargs=1, help='Set the repository path')
+	genconf.add_argument('-p','--passwd', type=str, nargs=1, help='Set the repository password')
+	genconf.add_argument('-i','--init',action='store_true',help='Init the repository');
 	args = parser.parse_args()
-	#check con - if empty than conf=conf.json
-	if not args.conf: 
-		args.conf = ['restic-conf.json'];
 	#check optional args - if all false then backup=true
 	is_backup_default = (not args.backup) and (not args.snapshots) and (not args.forget) and (not args.init) and (not args.mount);
 	if is_backup_default:
 		args.backup = True
 	#return
 	return args
+
+# Gen (default) conf file
+def genconf(args):
+	if not args.name:
+		args.name = ['restic-conf.json']
+	homedir = string.Template('${HOME}').substitute(os.environ)
+	if not args.dir:
+		args.dir = [homedir]
+	else:
+		args.dir[0] = string.Template(args.dir[0]).substitute(os.environ)
+	if not args.passwd:
+		args.passwd = ['password']
+	if not args.repo:
+		args.repo = [homedir + '/resticpy-backup']
+	conf = {} #init dictionary
+	conf["repo"] = args.repo[0]
+	conf["passwd"] = args.passwd[0]
+	entry = {}
+	entry["source"] = ["${HOME}"]
+	conf["entry"] = [entry]
+	fill_json(conf)
+	#Save conf file
+	conf_file = args.dir[0] + '/' + args.name[0]
+	jsonfile = open(conf_file, "w")
+	json.dump(conf, jsonfile, indent=4)
+	jsonfile.close()
+	#Init
+	if args.init:
+		#set passwd env for restic
+		os.environ["RESTIC_PASSWORD"] = conf["passwd"]
+		init(conf, args, conf_file)
 
 # Check json conf
 def check_json(conf, file):
@@ -79,12 +114,47 @@ def fill_json(conf):
 		if not "exclude" in entry:
 			entry["exclude"] = []
 		if not "skip" in entry:
-			entry["skip"] = false
+			entry["skip"] = False
 
 # Load config json
 def load_conf(conf_file):
+	search_path = []
+	is_file = True
+	is_dir = True
+	if not conf_file: #case empty
+		search_path = ['${HOME}', '${HOME}/.config', '.']
+	else: #there is sth, either files or folders
+		#check if all files or all folders
+		for item in conf_file:
+			item_sub = string.Template(item).substitute(os.environ);
+			if not os.path.isfile(item_sub):
+				is_file = False
+			if not os.path.isdir(item_sub):
+				is_dir = False
+		if not is_file and not is_dir:
+			print('invalid json: specified --conf options must be either all files or all folders')
+			quit()
+		if is_file and is_dir:
+			print('invalid json: parsing error')
+			quit()
+		#if folders set the search_path
+		if is_dir:
+			search_path = conf_file
+			conf_file = [] #so as to look for def_name in search_path
+	#look for def_neame in search_path
+	def_name = 'restic-conf.json'
+	for path in search_path:
+		path_sub = string.Template(path).substitute(os.environ)
+		name_try = path_sub +'/' + def_name
+		if os.path.isfile(name_try):
+			conf_file = [name_try]
+			break
+	#check if empty again
+	if not conf_file:
+		print('invalid json: %s not found' % def_name)
+		quit()
+	#read files
 	confs = []
-	#read
 	for file in conf_file:
 		try:
 			jsonfile = open(file, "r")
@@ -96,6 +166,7 @@ def load_conf(conf_file):
 		except ValueError as e:
 			print('invalid json: %s in %s' % (e, file))
 			quit()
+		jsonfile.close()
 		#check mandatory fields
 		if not check_json(conf, file):
 			quit()
@@ -191,6 +262,7 @@ def init(conf, args, conf_file):
 	conf["init"] = True
 	jsonfile = open(conf_file, "w")
 	json.dump(conf, jsonfile, indent=4)
+	jsonfile.close()
 
 # Backup
 def backup(conf, args):
@@ -313,6 +385,10 @@ def mount(conf ,args):
 def main():
 	#parse arguments
 	args = parse_args()
+	#check if genconf
+	if args.command == 'genconf':
+		genconf(args)
+		quit()
 	#get config json
 	confs = load_conf(args.conf)
 	#prints

@@ -18,7 +18,31 @@ pip install -r requirements.txt
 
 ## Configuration
 
-A `*.json` configuration file must be created for each repository. An example `*.json` file is the following.
+A `*.json` configuration file must be created for each repository. 
+A file called `restic-conf.json` is used by default. The searching path for the configuration file are the following:
+
+* `$HOME`
+* `$HOME/.config`
+* current directory (i.e. `./`)
+
+A default configuration file can be generated using
+
+```bash
+resticpy genconf
+```
+
+with additional optional parameters (use `resticpy genconf --help` for the help):
+
+* `--name NAME`: set configuration file name (defualt `restic-conf.json`)
+* `--dir DIR`: set configuration file location (defualt `$HOME`)
+* `--repo REPO`: set location of the repository (defualt is `$HOME/restic-backup`)
+* `--passwd PASSWORD`: set repository password (defualt is `password`)
+* `--init`: initialize the repository (see also `resticpy --init`) 
+
+
+Different or multiple configuration file(s) or different searching folder(s) may be specified (e.g. one for each repository, see `resticpy --conf FILE(s)/FOLDER(s)`). 
+
+An example `*.json` file is the following.
 
 ```json
 {
@@ -66,9 +90,7 @@ Optional keys are (if missing then default values are used):
 * `sudo`: flag to run the restic command with sudo (default is `false`). Requires `sudo` installed. Working only for Linux (no effects in Windows)
 * `skip`: flag to skip the operations on the entry (default is `false`).
 
-Note that the keys `init` must be initially set to `false` (or neglected) and will be updated automatically by the software after the repository initialization. The software will also add a new key `jsonfile` automatically for internal usage.
-
-A configuration file called `restic-conf.json` is used by default. Different or multiple configuration files may be specified (e.g. one for each repository).
+Note that the keys `init` must be initially set to `false` (or neglected) and will be updated automatically by the software after the repository initialization.
 
 ## Basic usage
 
@@ -108,7 +130,7 @@ Mount a repository (only one configuration file allowed)
 resticpy --mount path/to/mount
 ```
 
-Specify one or more (if allowed) configuration files
+Specify either one or more (if allowed) configuration file(s) or searching folder(s) (but not both)
 
 ```bash
 resticpy --conf path/to/jsonfile
@@ -137,3 +159,7 @@ or backup with dry-run
 ```bash
 resticpy -bd
 ```
+
+## TODO list
+
+* make installer with setuptools
