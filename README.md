@@ -26,7 +26,8 @@ pacman python-argparse
 
 ### Linux
 
-For ArchLinux users use the AUR. For other distros just copy `resticpy` to `/bin/usr` (or other directories in the `$PATH`).
+For ArchLinux users use the AUR from [here](https://aur.archlinux.org/packages/resticpy).
+For other distros just copy `resticpy` to `/bin/usr` (or other directories in the `$PATH`).
 
 ### Windows
 
