@@ -16,6 +16,22 @@ You may install automatically the Python packages using
 pip install -r requirements.txt
 ```
 
+However, for ArchLinux users it is suggested to use pacman (requires root permission)
+
+```bash
+pacman python-argparse
+```
+
+## Installation
+
+### Linux
+
+For ArchLinux users use the AUR. For other distros just copy `resticpy` to `/bin/usr` (or other directories in the `$PATH`).
+
+### Windows
+
+For now no installation is possible. A msi package with an exe will be probably created.
+
 ## Configuration
 
 A `*.json` configuration file must be created for each repository. 
@@ -39,8 +55,7 @@ with additional optional parameters (use `resticpy genconf --help` for the help)
 * `--passwd PASSWORD`: set repository password (defualt is `password`)
 * `--init`: initialize the repository (see also `resticpy --init`) 
 
-
-Different or multiple configuration file(s) or different searching folder(s) may be specified (e.g. one for each repository, see `resticpy --conf FILE(s)/FOLDER(s)`). 
+Different or multiple configuration file(s) (e.g. one for each repository) or different searching folder(s) may be specified (see `resticpy --conf FILE(s)/FOLDER(s)`). 
 
 An example `*.json` file is the following.
 
@@ -159,8 +174,3 @@ or backup with dry-run
 ```bash
 resticpy -bd
 ```
-
-## Installation
-
-### Linux
-For ArchLinux users use the AUR. For other distros just copy `resticpy` to `/bin/usr` (or other directories in the `$PATH`)
