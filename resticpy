@@ -39,7 +39,10 @@ def parse_args():
 def genconf(args):
 	if not args.name:
 		args.name = ['restic-conf.json']
-	homedir = string.Template('${HOME}').substitute(os.environ)
+	homeenv = "${HOME}"
+	if platform == "win32":
+		homeenv = '${USERPROFILE}'
+	homedir = string.Template(homeenv).substitute(os.environ)
 	if not args.dir:
 		args.dir = [homedir]
 	else:
@@ -47,12 +50,12 @@ def genconf(args):
 	if not args.passwd:
 		args.passwd = ['password']
 	if not args.repo:
-		args.repo = [homedir + '/resticpy-backup']
+		args.repo = os.path.join(homedir, 'resticpy-backup')
 	conf = {} #init dictionary
 	conf["repo"] = args.repo[0]
 	conf["passwd"] = args.passwd[0]
 	entry = {}
-	entry["source"] = ["${HOME}"]
+	entry["source"] = [homeenv]
 	conf["entry"] = [entry]
 	fill_json(conf)
 	#Save conf file
@@ -60,6 +63,7 @@ def genconf(args):
 	jsonfile = open(conf_file, "w")
 	json.dump(conf, jsonfile, indent=4)
 	jsonfile.close()
+	print('json file %s generated' % os.path.join(args.dir[0], args.name[0]))
 	#Init
 	if args.init:
 		#set passwd env for restic
@@ -122,7 +126,10 @@ def load_conf(conf_file):
 	is_file = True
 	is_dir = True
 	if not conf_file: #case empty
-		search_path = ['${HOME}', '${HOME}/.config', '.']
+		homeenv = '${HOME}'
+		if platform == "win32":
+			homeenv = '${USERPROFILE}'
+		search_path = [homeenv, homeenv + '/.config', '.']
 	else: #there is sth, either files or folders
 		#check if all files or all folders
 		for item in conf_file:
@@ -148,6 +155,7 @@ def load_conf(conf_file):
 		name_try = path_sub +'/' + def_name
 		if os.path.isfile(name_try):
 			conf_file = [name_try]
+			print('json file located in %s' % name_try)
 			break
 	#check if empty again
 	if not conf_file:
