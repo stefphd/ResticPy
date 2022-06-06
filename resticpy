@@ -164,19 +164,20 @@ def load_conf(conf_file):
 	#read files
 	confs = []
 	for file in conf_file:
+		file_sub = string.Template(file).substitute(os.environ)
 		try:
-			jsonfile = open(file, "r")
+			jsonfile = open(file_sub, "r")
 		except IOError:
 			print('invalid json: File not found')
 			quit()
 		try:
 			conf = json.load(jsonfile)
 		except ValueError as e:
-			print('invalid json: %s in %s' % (e, file))
+			print('invalid json: %s in %s' % (e, file_sub))
 			quit()
 		jsonfile.close()
 		#check mandatory fields
-		if not check_json(conf, file):
+		if not check_json(conf, file_sub):
 			quit()
 		#fill empty or missing (optinal) fields
 		fill_json(conf)
