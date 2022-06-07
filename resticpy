@@ -6,6 +6,7 @@ import argparse
 import string
 import os
 from sys import platform
+from sys import exit
 import tempfile
 import subprocess
 
@@ -46,20 +47,28 @@ def genconf(args):
 	if not args.dir:
 		args.dir = [homedir]
 	else:
-		args.dir[0] = string.Template(args.dir[0]).substitute(os.environ)
+		args.dir = [string.Template(args.dir[0]).substitute(os.environ)]
 	if not args.passwd:
 		args.passwd = ['password']
 	if not args.repo:
-		args.repo = os.path.join(homedir, 'resticpy-backup')
+		args.repo = [os.path.join(homedir, '.resticpy-backup')]
 	conf = {} #init dictionary
 	conf["repo"] = args.repo[0]
 	conf["passwd"] = args.passwd[0]
 	entry = {}
 	entry["source"] = [homeenv]
+	entry["exclude"] = [".*"]
 	conf["entry"] = [entry]
 	fill_json(conf)
-	#Save conf file
+	#Name of conf file
 	conf_file = args.dir[0] + '/' + args.name[0]
+	#Check for existing files
+	if os.path.isfile(conf_file):
+		if os.path.isfile(conf_file + '.backup'):
+			print("unable to generate json file")
+			exit()
+		os.rename(conf_file, conf_file + '.backup')
+	#Save conf file
 	jsonfile = open(conf_file, "w")
 	json.dump(conf, jsonfile, indent=4)
 	jsonfile.close()
@@ -140,10 +149,10 @@ def load_conf(conf_file):
 				is_dir = False
 		if not is_file and not is_dir:
 			print('invalid json: specified --conf options must be either all files or all folders')
-			quit()
+			exit()
 		if is_file and is_dir:
 			print('invalid json: parsing error')
-			quit()
+			exit()
 		#if folders set the search_path
 		if is_dir:
 			search_path = conf_file
@@ -160,7 +169,7 @@ def load_conf(conf_file):
 	#check if empty again
 	if not conf_file:
 		print('invalid json: %s not found' % def_name)
-		quit()
+		exit()
 	#read files
 	confs = []
 	for file in conf_file:
@@ -169,16 +178,16 @@ def load_conf(conf_file):
 			jsonfile = open(file_sub, "r")
 		except IOError:
 			print('invalid json: File not found')
-			quit()
+			exit()
 		try:
 			conf = json.load(jsonfile)
 		except ValueError as e:
 			print('invalid json: %s in %s' % (e, file_sub))
-			quit()
+			exit()
 		jsonfile.close()
 		#check mandatory fields
 		if not check_json(conf, file_sub):
-			quit()
+			exit()
 		#fill empty or missing (optinal) fields
 		fill_json(conf)
 		#parse env variables
@@ -246,7 +255,7 @@ def run(cmd):
 	exit = subprocess.run(cmd, shell=True)
 	if not exit.returncode==0 and not platform == 'win32':
 		print(exit.returncode)
-		quit()
+		exit()
 
 # Init
 def init(conf, args, conf_file):
@@ -295,7 +304,7 @@ def backup(conf, args):
 		source = get_restic_source(entry)
 		if not source:
 			print("invalid json: empty source")
-			quit()
+			exit()
 		#restic dry run
 		dry_run = ''
 		if conf["dry-run"] or args.dry_run:
@@ -370,10 +379,10 @@ def mount(conf ,args):
 			os.mkdir(mount)
 	except OSError as e:
 		print("mount error: %s" % e)    
-		quit()
+		exit()
 	if not len(os.listdir(mount))==0:
 		print("mount error: Directory must be empty")
-		quit()
+		exit()
 	#restic action
 	action = 'mount '
 	#restic dry run
@@ -397,7 +406,7 @@ def main():
 	#check if genconf
 	if args.command == 'genconf':
 		genconf(args)
-		quit()
+		exit()
 	#get config json
 	confs = load_conf(args.conf)
 	#prints
@@ -411,31 +420,31 @@ def main():
 		if args.init:
 			if conf["init"]:
 				print("repo error: already init")
-				quit();
+				exit();
 			init(conf, args, args.conf[i_conf])
 		if args.backup:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
-				quit();
+				exit();
 			backup(conf, args)
 		if args.forget:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
-				quit();
+				exit();
 			forget(conf, args)
 		if args.snapshots:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
-				quit();
+				exit();
 			snapshots(conf, args)
 		i_conf += 1
 	if args.mount:
 		if platform == 'win32':
 			print("Mount not working in Windows")
-			quit()
+			exit()
 		if not conf["init"]:
 			print("repo error: run resticpy --init")
-			quit();
+			exit();
 		if len(confs)>1:
 			print("mount error: Only one configuration file allowed")
 		mount(confs[0], args)
