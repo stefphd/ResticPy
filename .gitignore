@@ -17,6 +17,8 @@ testing/test-mount
 *.tar*
 
 # Distribution / packaging
+bin
+.build
 .Python
 build/
 develop-eggs/
