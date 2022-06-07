@@ -1,0 +1,50 @@
+#!/usr/bin/bash
+
+#Installation directory
+PREFIX=/usr/local
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --prefix)
+      PREFIX="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+# Check deps
+echo Checking dependencies...
+
+DEP_OK=0
+type -P python3 >/dev/null 2>&1 && DEP_OK=1
+if [[ "$DEP_OK" == "0" ]]
+	then echo Python3 not installed && exit 1
+	else echo Python3 installed
+fi
+
+DEP_OK=0
+type -P restic >/dev/null 2>&1 && DEP_OK=1
+if [[ "$DEP_OK" == "0" ]]
+	then echo Restic not installed && exit 1
+	else echo Restic installed
+fi
+
+DEP_OK=0
+python3 -m argparse |& grep -q 'No module named' && DEP_OK=0 || DEP_OK=1
+if [[ "$DEP_OK" == "0" ]]
+	then echo Python-argparse not installed && exit 1
+	else echo Python-argparse installed
+fi
+
+# Copy resticpy
+echo Installation directory is $PREFIX/bin/
+echo Installing ResticPy...
+cp resticpy $PREFIX/bin/

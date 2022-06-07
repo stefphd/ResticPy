@@ -31,7 +31,11 @@ pacman python-argparse
 ### Linux
 
 For ArchLinux users use the AUR from [here](https://aur.archlinux.org/packages/resticpy).
-For other distros run `install`. This just copies `resticpy` to `usr/local/bin` and checks for pre-requisites.
+For other distros run `install`. This just copies `resticpy` to `usr/local/bin` and checks for pre-requisites. Default installation is system-wide. For local installation use
+
+```
+./install --prefix $HOME/.local
+```
 
 ### Windows
 
