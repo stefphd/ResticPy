@@ -6,9 +6,13 @@ Tested with Linux (ArchLinux) and Windows (version 10).
 
 ## Pre-requisites
 
-* `Python` >= 3.10.0
+For Linux and developing in Windows:
+
 * `Restic` >= 0.13.0, e.g. from [here](https://github.com/restic/restic/releases). For details on Restic usage see e.g. [this](https://restic.readthedocs.io/en/latest/).
+* `Python` >= 3.10.0
 * `argparser` >= 1.4.0 Python package
+
+For installation Windows no pre-requisites are necessary (all binaries are provided with the installer).
 
 You may install automatically the Python packages using
 
@@ -27,11 +31,11 @@ pacman python-argparse
 ### Linux
 
 For ArchLinux users use the AUR from [here](https://aur.archlinux.org/packages/resticpy).
-For other distros just copy `resticpy` to `/bin/usr` (or other directories in the `$PATH`).
+For other distros run `install`. This just copies `resticpy` to `usr/local/bin` and checks for pre-requisites.
 
 ### Windows
 
-For now no installation is possible. A msi package with an exe will be probably created.
+Run the installer `ResticPy-X.Y-Windows10.msi`. Default installation directory is `C:\Program Files\stefphd\ResticPy\`. After the installation, it is necessary to add the installation directory to the PATH environment variable. 
 
 ## Configuration
 
@@ -108,7 +112,7 @@ Optional keys are (if missing then default values are used):
 
 Note that the keys `init` must be initially set to `false` (or neglected) and will be updated automatically by the software after the repository initialization.
 
-## Basic usage
+## Usage
 
 Print the help
 
@@ -174,4 +178,76 @@ or backup with dry-run
 
 ```bash
 resticpy -bd
+```
+
+## Building in Windows
+
+Windows (standalone) executable is built using `pyinstaller`. To reduce the generated file size, it is suggested to create a virtual environment using `venv`.
+
+Before building, it is necessary to download Restic and put the executable `restic.exe` in the folder `resource` (see https://github.com/restic/restic/releases).
+
+### Setup the virtual environment
+
+To setup the virtual environment, first go to the source directory and run in the command prompt:
+
+```bash
+python -m venv env
+```
+
+where `env` is a local folder containing the virtual environment. To activate the create virtual environment run
+
+```bash
+cd env/Scripts
+activate.bat
+cd ../..
+```
+
+Finally, install the build requirements using
+
+```bash
+pip install -r requirements.txt
+pip install -r build_requirements.txt
+```
+
+This actually installs `arg-parse` and `pyinstaller` in the created virtual environment. The `pip list` command should return the following output (package versions may differ)
+
+```txt
+Package                   Version
+------------------------- ---------
+altgraph                  0.17.2
+future                    0.18.2
+pefile                    2022.5.30
+pip                       21.2.4
+pyinstaller               5.1
+pyinstaller-hooks-contrib 2022.7
+pywin32-ctypes            0.2.0
+setuptools                58.1.0
+```
+
+To exit from the virtual environment (after the building) use
+
+```bash
+cd env/Scripts
+deactivate.bat
+cd ../..
+```
+
+### Build the standalone application
+
+To build the standalone application, use in the command prompt
+
+```bash
+python build
+```
+
+This creates a new folder `bin/resticpy` containing the binary files.
+
+### Build the installer
+
+An `.msi` installer can be built starting from the binary files in `bin/resticpy` using Visual Studio (>= 2019). See the Visual Studio project in `installerWin`. This may be done also from command prompt
+
+```bash
+cd \installerWin
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+devenv installerWin.sln /build
 ```
