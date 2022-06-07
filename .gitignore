@@ -17,6 +17,9 @@ testing/test-mount
 *.tar*
 
 # Distribution / packaging
+*.exe
+*.msi
+.vs
 bin
 .build
 .Python
