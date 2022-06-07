@@ -37,6 +37,8 @@ For other distros run `install`. This just copies `resticpy` to `usr/local/bin` 
 ./install --prefix $HOME/.local
 ```
 
+Use `./uninstall` for uninstalling (with `--prefix` for local installation).
+
 ### Windows
 
 Run the installer `ResticPy-X.Y-Windows10.msi`. Default installation directory is `C:\Program Files\stefphd\ResticPy\`. After the installation, it is necessary to add the installation directory to the PATH environment variable. 
