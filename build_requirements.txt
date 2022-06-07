@@ -1,0 +1,2 @@
+# Required Python packages for building
+pyinstaller >= 5.1
