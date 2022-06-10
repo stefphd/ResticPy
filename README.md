@@ -12,7 +12,7 @@ For Linux and developing in Windows:
 * `Python` >= 3.10.0
 * `argparser` >= 1.4.0 Python package
 
-For installation Windows no pre-requisites are necessary (all binaries are provided with the installer).
+For installation in Windows no pre-requisites are necessary (all binaries are provided with the installer).
 
 You may install automatically the Python packages using
 
@@ -41,12 +41,29 @@ Use `./uninstall` for uninstalling (with `--prefix` for local installation).
 
 ### Windows
 
-Run the installer `ResticPy-X.Y-Windows10.msi`. Default installation directory is `C:\Program Files\stefphd\ResticPy\`. After the installation, it is necessary to add the installation directory to the PATH environment variable. 
+Run the installer `ResticPy-X.Y-Windows10.msi`. Default installation directory is `C:\Program Files\stefphd\ResticPy\`. After the installation, it is necessary to add the installation directory to the PATH environment variable.
+
+## Quick start
+
+First, you need to generate the configuration file
+
+```bash
+resticpy genconf
+```
+
+which is placed in `$HOME` (`%USERPROFILE%` in Windows, i.e. `C:\Users\username`) with name `restic-conf.json`. You need to modify this file according to your requirements. See [Configuration](#configuration) for details on the configuration file.
+
+Second, you can backup, forget older backup (if any) and print all snapshots using
+
+```bash
+resticpy -bfs
+```
+
+See [Usage](#usage) for details on the usage.
 
 ## Configuration
 
-A `*.json` configuration file must be created for each repository. 
-A file called `restic-conf.json` is used by default. The searching path for the configuration file are the following:
+A `*.json` configuration file must be created for each repository. A file called `restic-conf.json` is used by default. The searching path for the configuration file are the following:
 
 * `$HOME`
 * `$HOME/.config`
@@ -64,38 +81,38 @@ with additional optional parameters (use `resticpy genconf --help` for the help)
 * `--dir DIR`: set configuration file location (defualt `$HOME`)
 * `--repo REPO`: set location of the repository (defualt is `$HOME/restic-backup`)
 * `--passwd PASSWORD`: set repository password (defualt is `password`)
-* `--init`: initialize the repository (see also `resticpy --init`) 
+* `--init`: initialize the repository (see also `resticpy --init`)
 
-Different or multiple configuration file(s) (e.g. one for each repository) or different searching folder(s) may be specified (see `resticpy --conf FILE(s)/FOLDER(s)`). 
+Different or multiple configuration file(s) (e.g. one for each repository) or different searching folder(s) may be specified (see `resticpy --conf FILE(s)/FOLDER(s)`).
 
 An example `*.json` file is the following.
 
 ```json
 {
-	"repo": "/path/to/backup",
-	"passwd": "password",
-	"dry-run": false,
-	"init": false,
-	"entry": [
-		{
-			"tag": ["home", "data"],
-			"source": ["${HOME}"],
-			"keeplast": "NaN",	
-			"skip": false,
-			"exclude": ["**/.*",
-						"**/*.o",
-						"**/*.o.d",
-						"**/.local"
-						]
-		},
-		{
-			"tag": ["config"],
-			"source": ["/etc", "${HOME}/.config"],
-			"sudo": true,
-			"skip": false,
-			"exclude": ["**/.*"]	
-		}
-	],
+    "repo": "/path/to/backup",
+    "passwd": "password",
+    "dry-run": false,
+    "init": false,
+    "entry": [
+        {
+            "tag": ["home", "data"],
+            "source": ["${HOME}"],
+            "keeplast": "NaN",  
+            "skip": false,
+            "exclude": ["**/.*",
+                        "**/*.o",
+                        "**/*.o.d",
+                        "**/.local"
+                        ]
+        },
+        {
+            "tag": ["config"],
+            "source": ["/etc", "${HOME}/.config"],
+            "sudo": true,
+            "skip": false,
+            "exclude": ["**/.*"]  
+        }
+    ],
 }
 ```
 
@@ -144,10 +161,16 @@ Print the list of snapshots
 resticpy --snapshoots
 ```
 
-Forget the snapshots according to the specified `keeplast`
+Forget the snapshots according to the specified `keeplast` policy in the configuration file
 
 ```bash
 resticpy --forget
+```
+
+Forget the snapshots according to the specified policy (see restic documentation for possible policy)
+
+```bash
+resticpy --forget POLICY
 ```
 
 Mount a repository (only one configuration file allowed)
@@ -174,7 +197,7 @@ Force dry-run in restic
 resticpy --backup --dry-run
 ```
 
-One-char (first char of the corrisponding command) and multiple arguments may be also used, e.g. to backup, forger, and print the snapshots 
+One-char (first char of the corrisponding command) and multiple arguments may be also used, e.g. to backup, forger, and print the snapshots
 
 ```bash
 resticpy -bfs
