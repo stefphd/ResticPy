@@ -12,11 +12,11 @@ import subprocess
 
 # Parse the aruments
 def parse_args():
-	parser = argparse.ArgumentParser(description='A Python wrapper for Restic using a json configuration file.');
+	parser = argparse.ArgumentParser(description='A Python wrapper for Restic using a json configuration file.')
 	parser.add_argument('-i','--init',action='store_true',help='Init a repository')
 	parser.add_argument('-b','--backup',action='store_true',help='Perform the backup (default option).')
 	parser.add_argument('-s','--snapshots',action='store_true',help='Print the snapshots.')
-	parser.add_argument('-f','--forget',action='store_true',help='Forget the snapshots with the specified policy.')
+	parser.add_argument('-f','--forget',metavar='POLICY', type=str, nargs='*',help='Forget the snapshots with the specified policy.')
 	parser.add_argument('-d','--dry-run',action='store_true',help='Force dry run.')
 	parser.add_argument('-e','--echo',action='store_true',help='Echo the restic commands only.')
 	parser.add_argument('-m','--mount',metavar='FOLDER', type=str, nargs=1,help='Mount a repository (only one configuration file allowed).')
@@ -27,10 +27,10 @@ def parse_args():
 	genconf.add_argument('-d','--dir', type=str, nargs=1, help='Set the location of the configuration file (defualt is $HOME')
 	genconf.add_argument('-r','--repo', type=str, nargs=1, help='Set the repository path')
 	genconf.add_argument('-p','--passwd', type=str, nargs=1, help='Set the repository password')
-	genconf.add_argument('-i','--init',action='store_true',help='Init the repository');
+	genconf.add_argument('-i','--init',action='store_true',help='Init the repository')
 	args = parser.parse_args()
 	#check optional args - if all false then backup=true
-	is_backup_default = (not args.backup) and (not args.snapshots) and (not args.forget) and (not args.init) and (not args.mount);
+	is_backup_default = (not args.backup) and (not args.snapshots) and (args.forget is None) and (not args.init) and (not args.mount)
 	if is_backup_default:
 		args.backup = True
 	#return
@@ -81,7 +81,7 @@ def genconf(args):
 
 # Check json conf
 def check_json(conf, file):
-	e = '';
+	e = ''
 	if not "repo" in conf:
 		e = 'Missing key "repo"'
 	elif not conf["repo"]:
@@ -115,7 +115,7 @@ def fill_json(conf):
 		conf["dry-run"] = False
 	for entry in conf["entry"]:
 		if not "tag" in entry:
-			entry["tag"] = [];
+			entry["tag"] = []
 		if not "sudo" in entry:
 			entry["sudo"] = False
 		if not "keeplast" in entry:
@@ -142,7 +142,7 @@ def load_conf(conf_file):
 	else: #there is sth, either files or folders
 		#check if all files or all folders
 		for item in conf_file:
-			item_sub = string.Template(item).substitute(os.environ);
+			item_sub = string.Template(item).substitute(os.environ)
 			if not os.path.isfile(item_sub):
 				is_file = False
 			if not os.path.isdir(item_sub):
@@ -343,15 +343,33 @@ def forget(conf, args):
 	base = get_restic_base(conf)
 	#restic action
 	action = 'forget '
-	for entry in conf["entry"]:
-		if entry["keeplast"] == -1:
-			continue
-		if entry["skip"]:
-			continue
-		#restic tag
-		tag = get_restic_tag(entry)
-		#restic keep last
-		keeplast = get_keep_last(entry)
+	#usage with no args to forget
+	if len(args.forget) == 0:
+		for entry in conf["entry"]:
+			if entry["keeplast"] == -1:
+				continue
+			if entry["skip"]:
+				continue
+			#restic tag
+			tag = get_restic_tag(entry)
+			#restic policy
+			keeplast = get_keep_last(entry)
+			#prune flag
+			prune = '--prune '
+			#restic dry run
+			dry_run = ''
+			if conf["dry-run"] or args.dry_run:
+				dry_run = '--dry-run '
+			#build restic cmd
+			cmd = base + action + tag + keeplast + prune + dry_run
+			#print if echo and return
+			if args.echo:
+			#cat cmd
+				print(cmd)
+				return
+			#run cmd
+			run(cmd)
+	else:
 		#prune flag
 		prune = '--prune '
 		#restic dry run
@@ -359,7 +377,10 @@ def forget(conf, args):
 		if conf["dry-run"] or args.dry_run:
 			dry_run = '--dry-run '
 		#build restic cmd
-		cmd = base + action + tag + keeplast + prune + dry_run
+		policy = ''
+		for policy0 in args.forget:
+			policy += policy0 + ' '
+		cmd = base + action + policy + prune + dry_run
 		#print if echo and return
 		if args.echo:
 		#cat cmd
@@ -413,29 +434,29 @@ def main():
 	#print(args)
 	#print(confs)
 	#gen command
-	i_conf = 0;
+	i_conf = 0
 	for conf in confs:
 		#set passwd env for restic
 		os.environ["RESTIC_PASSWORD"] = conf["passwd"]
 		if args.init:
 			if conf["init"]:
 				print("repo error: already init")
-				exit();
+				exit()
 			init(conf, args, args.conf[i_conf])
 		if args.backup:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
-				exit();
+				exit()
 			backup(conf, args)
-		if args.forget:
+		if not args.forget is None:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
-				exit();
+				exit()
 			forget(conf, args)
 		if args.snapshots:
 			if not conf["init"]:
 				print("repo error: run resticpy --init")
-				exit();
+				exit()
 			snapshots(conf, args)
 		i_conf += 1
 	if args.mount:
@@ -444,7 +465,7 @@ def main():
 			exit()
 		if not conf["init"]:
 			print("repo error: run resticpy --init")
-			exit();
+			exit()
 		if len(confs)>1:
 			print("mount error: Only one configuration file allowed")
 		mount(confs[0], args)
