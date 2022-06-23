@@ -130,7 +130,8 @@ def fill_json(conf):
 			entry["skip"] = False
 
 # Load config json
-def load_conf(conf_file):
+def load_conf(args):
+	conf_file = args.conf
 	search_path = []
 	is_file = True
 	is_dir = True
@@ -202,6 +203,7 @@ def load_conf(conf_file):
 		#append
 		confs.append(conf)
 	#return conf structure
+	args.conf = conf_file #update args
 	return confs
 
 # Gen exclude file
@@ -429,7 +431,7 @@ def main():
 		genconf(args)
 		exit()
 	#get config json
-	confs = load_conf(args.conf)
+	confs = load_conf(args)
 	#prints
 	#print(args)
 	#print(confs)
